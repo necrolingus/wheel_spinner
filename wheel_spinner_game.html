@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spin the Wheel</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      position: relative;
+    }
+    canvas {
+      border: 3px solid black;
+      border-radius: 50%;
+      margin-bottom: 10px;
+    }
+    .controls, .finished-controls {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .input-section {
+      margin: 10px;
+    }
+    .input-section input {
+      padding: 5px;
+    }
+    .input-section button {
+      padding: 5px 10px;
+      margin-left: 5px;
+    }
+    .result-display {
+      font-weight: bold;
+      margin: 10px;
+      font-size: 18px;
+    }
+    .clear-link {
+      margin-top: 10px;
+      color: blue;
+      text-decoration: underline;
+      cursor: pointer;
+    }
+    .arrow {
+      width: 0;
+      height: 0;
+      border-left: 10px solid transparent;
+      border-right: 10px solid transparent;
+      border-top: 20px solid red;
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  </style>
+</head>
+<body>
+  <div class="arrow"></div>
+  <canvas id="wheel" width="400" height="400"></canvas>
+
+  <div class="controls" id="controls">
+    <div class="input-section">
+      <input type="text" id="optionInput" placeholder="Enter option here" />
+      <button onclick="addOption()">Add</button>
+    </div>
+    <button onclick="finishAdding()">Finish</button>
+  </div>
+
+  <div class="finished-controls" id="finishedControls" style="display:none">
+    <div class="result-display" id="result">Result: </div>
+    <button onclick="spinWheel()">Spin the Wheel</button>
+	<button onclick="removeSelectedOption()">Remove Selected Option</button>
+    <div class="clear-link" onclick="resetWheel()">Clear and Start Over</div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("wheel");
+    const ctx = canvas.getContext("2d");
+    const maxOptions = 20;
+    let options = [];
+    let angleOffset = 0;
+    let spinning = false;
+    let selectedOptionIndex = null;
+
+    function getRandomLightColor() {
+      const h = Math.floor(Math.random() * 360);
+      const s = 70 + Math.random() * 30;
+      const l = 60 + Math.random() * 20;
+      return `hsl(${h}, ${s}%, ${l}%)`;
+    }
+
+    function drawWheel() {
+      const radius = canvas.width / 2;
+      const step = (2 * Math.PI) / options.length;
+
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      options.forEach((opt, i) => {
+        const startAngle = angleOffset + i * step;
+        const endAngle = startAngle + step;
+
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, startAngle, endAngle);
+        ctx.fillStyle = opt.color;
+        ctx.fill();
+        ctx.stroke();
+
+        // Text
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(startAngle + step / 2);
+        ctx.textAlign = "right";
+        ctx.fillStyle = "black";
+        ctx.font = "16px Arial";
+        ctx.fillText(opt.text, radius - 10, 5);
+        ctx.restore();
+      });
+    }
+
+    function addOption() {
+      const input = document.getElementById("optionInput");
+      const text = input.value.trim();
+      if (text && options.length < maxOptions) {
+        options.push({ text, color: getRandomLightColor() });
+        input.value = "";
+        drawWheel();
+      }
+    }
+
+    function finishAdding() {
+      if (options.length < 2) return alert("Add at least 2 options!");
+      document.getElementById("controls").style.display = "none";
+      document.getElementById("finishedControls").style.display = "flex";
+      drawWheel();
+    }
+
+    function spinWheel() {
+      if (spinning) return;
+      spinning = true;
+      let duration = 4000;
+      let start = null;
+      let totalRotation = Math.random() * 360 + 360 * 5;
+
+      function animate(timestamp) {
+        if (!start) start = timestamp;
+        let progress = timestamp - start;
+        let eased = easeOutCubic(Math.min(progress / duration, 1));
+
+        angleOffset = (totalRotation * eased * Math.PI) / 180;
+        drawWheel();
+
+        if (progress < duration) {
+          requestAnimationFrame(animate);
+        } else {
+          spinning = false;
+          selectOption();
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function easeOutCubic(t) {
+      return 1 - Math.pow(1 - t, 3);
+    }
+
+    function selectOption() {
+      const step = (2 * Math.PI) / options.length;
+      const angle = (2 * Math.PI - (angleOffset % (2 * Math.PI))) % (2 * Math.PI);
+      const adjustedAngle = (angle + Math.PI * 1.5) % (2 * Math.PI); // top arrow = -90 degrees
+      selectedOptionIndex = Math.floor(adjustedAngle / step);
+      const selected = options[selectedOptionIndex];
+      document.getElementById("result").textContent = `Result: ${selected.text}`;
+    }
+
+    function removeSelectedOption() {
+      if (selectedOptionIndex != null && options.length > 1) {
+        options.splice(selectedOptionIndex, 1);
+        selectedOptionIndex = null;
+        document.getElementById("result").textContent = "Result: ";
+        drawWheel();
+      }
+    }
+
+    function resetWheel() {
+      options = [];
+      angleOffset = 0;
+      selectedOptionIndex = null;
+      spinning = false;
+      document.getElementById("controls").style.display = "flex";
+      document.getElementById("finishedControls").style.display = "none";
+      drawWheel();
+    }
+
+    drawWheel();
+  </script>
+</body>
+</html>

@@ -19,12 +19,17 @@
     }
 
     canvas {
-      border: 3px solid #0ff;
-      border-radius: 50%;
-      box-shadow: 0 0 30px #0ff;
-      margin-bottom: 10px;
-      background-color: #111;
-    }
+	  width: 100%;
+	  max-width: 400px;
+	  aspect-ratio: 1 / 1;
+	  display: block;
+	  background-color: #111;
+	  border: 3px solid #0ff;
+	  border-radius: 50%;
+	  box-shadow: 0 0 30px #0ff;
+	  margin-bottom: 10px;
+	}
+
 
     .controls, .finished-controls {
       display: flex;
@@ -123,8 +128,8 @@
 </head>
 <body>
   <div class="arrow"></div>
-  <canvas id="wheel" width="400" height="400" style="width: 100%; max-width: 400px;"></canvas>
-
+  <!-- <canvas id="wheel" width="400" height="400" style="width: 100%; max-width: 400px;"></canvas> -->
+  <canvas id="wheel"></canvas>
   <div class="controls" id="controls">
     <div class="input-section">
       <input type="text" id="optionInput" placeholder="Enter option here" />
@@ -167,39 +172,39 @@
     }
 
     function drawWheel() {
-      const renderedWidth = canvas.getBoundingClientRect().width;
-	  const scale = renderedWidth / canvas.width;
-	  ctx.save();
-	  ctx.scale(scale, scale); // apply scale
+	  // Resize canvas to match its display size
+	  const rect = canvas.getBoundingClientRect();
+	  canvas.width = rect.width;
+	  canvas.height = rect.height;
+
 	  const radius = canvas.width / 2;
+	  const step = (2 * Math.PI) / options.length;
 
-      const step = (2 * Math.PI) / options.length;
+	  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
+	  options.forEach((opt, i) => {
+		const startAngle = angleOffset + i * step;
+		const endAngle = startAngle + step;
 
-      options.forEach((opt, i) => {
-        const startAngle = angleOffset + i * step;
-        const endAngle = startAngle + step;
+		ctx.beginPath();
+		ctx.moveTo(radius, radius);
+		ctx.arc(radius, radius, radius, startAngle, endAngle);
+		ctx.fillStyle = opt.color;
+		ctx.fill();
+		ctx.stroke();
 
-        ctx.beginPath();
-        ctx.moveTo(radius, radius);
-        ctx.arc(radius, radius, radius, startAngle, endAngle);
-        ctx.fillStyle = opt.color;
-        ctx.fill();
-        ctx.stroke();
+		ctx.save();
+		ctx.translate(radius, radius);
+		ctx.rotate(startAngle + step / 2);
+		ctx.textAlign = "right";
+		ctx.font = `${Math.floor(radius / 10)}px 'Segoe UI', sans-serif`;
+		ctx.shadowBlur = 0;
+		ctx.fillStyle = "#000";
+		ctx.fillText(opt.text, radius - 12, 8);
+		ctx.restore();
+	  });
+	}
 
-        ctx.save();
-        ctx.translate(radius, radius);
-        ctx.rotate(startAngle + step / 2);
-        ctx.textAlign = "right";
-        ctx.font = "bold 20px 'Segoe UI', sans-serif";
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = "#000";
-        ctx.fillText(opt.text, radius - 12, 8);
-        ctx.restore();
-      });
-	  ctx.restore();
-    }
 
     function addOption() {
       const input = document.getElementById("optionInput");

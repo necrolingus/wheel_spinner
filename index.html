@@ -6,7 +6,9 @@
   <title>Spin the Wheel</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #000;
+      color: #0ff;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -14,37 +16,83 @@
       padding: 20px;
       position: relative;
     }
+
     canvas {
-      border: 3px solid black;
+      border: 3px solid #0ff;
       border-radius: 50%;
+      box-shadow: 0 0 30px #0ff;
       margin-bottom: 10px;
+      background-color: #111;
     }
+
     .controls, .finished-controls {
       display: flex;
       flex-direction: column;
       align-items: center;
     }
+
     .input-section {
       margin: 10px;
     }
+
     .input-section input {
       padding: 5px;
     }
-    .input-section button {
-      padding: 5px 10px;
-      margin-left: 5px;
+
+    .input-section button, .finished-controls button {
+      padding: 6px 12px;
+      margin: 5px;
+      cursor: pointer;
     }
+
+    #spinButton {
+	  padding: 20px 40px; /* Bigger tap area */
+	  background: linear-gradient(45deg, #ff416c, #ff4b2b);
+	  color: white;
+	  font-size: 28px; /* Larger text */
+	  font-weight: bold;
+	  border: none;
+	  border-radius: 30px;
+	  box-shadow: 0 0 10px #ff4b2b;
+	  cursor: pointer;
+	  transition: all 0.3s ease;
+	  margin-bottom: 20px; /* Spacing below button */
+	}
+
+
+    #spinButton:hover:not(:disabled) {
+      transform: scale(1.05);
+      box-shadow: 0 0 20px #ff4b2b;
+    }
+
+    #spinButton:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      box-shadow: none;
+      transform: none;
+    }
+
     .result-display {
       font-weight: bold;
       margin: 10px;
-      font-size: 18px;
+      font-size: 20px;
+      color: #ff0;
+      text-shadow: 0 0 10px #ff0;
     }
-    .clear-link {
+
+    .bottom-options {
       margin-top: 10px;
-      color: blue;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .clear-link {
+      color: #0ff;
       text-decoration: underline;
       cursor: pointer;
     }
+
     .arrow {
       width: 0;
       height: 0;
@@ -55,6 +103,20 @@
       top: 0;
       left: 50%;
       transform: translateX(-50%);
+    }
+
+    .history {
+      margin-top: 20px;
+      color: #ccc;
+      font-size: 14px;
+      max-width: 400px;
+      text-align: center;
+    }
+
+    .warning {
+      color: #ff7070;
+      margin-top: 10px;
+      display: none;
     }
   </style>
 </head>
@@ -72,19 +134,29 @@
 
   <div class="finished-controls" id="finishedControls" style="display:none">
     <div class="result-display" id="result">Result: </div>
-    <button onclick="spinWheel()">Spin the Wheel</button>
-	<button onclick="removeSelectedOption()">Remove Selected Option</button>
-    <div class="clear-link" onclick="resetWheel()">Clear and Start Over</div>
+    <button id="spinButton" onclick="spinWheel()">Spin the Wheel</button>
+    <div class="bottom-options">
+      <label><input type="checkbox" id="autoRemove" /> Remove selected option after spin</label>
+      <div class="clear-link" onclick="resetWheel()">Clear and Start Over</div>
+    </div>
+    <div class="warning" id="warningMessage">Only one option left. Please clear the wheel and start over.</div>
   </div>
+
+  <div class="history" id="history"></div>
 
   <script>
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
+    const spinButton = document.getElementById("spinButton");
+    const warningMessage = document.getElementById("warningMessage");
+
     const maxOptions = 20;
     let options = [];
     let angleOffset = 0;
     let spinning = false;
     let selectedOptionIndex = null;
+    let shouldRemoveAfterSpin = false;
+    let resultHistory = [];
 
     function getRandomLightColor() {
       const h = Math.floor(Math.random() * 360);
@@ -110,14 +182,14 @@
         ctx.fill();
         ctx.stroke();
 
-        // Text
         ctx.save();
         ctx.translate(radius, radius);
         ctx.rotate(startAngle + step / 2);
         ctx.textAlign = "right";
-        ctx.fillStyle = "black";
-        ctx.font = "16px Arial";
-        ctx.fillText(opt.text, radius - 10, 5);
+        ctx.font = "bold 20px 'Segoe UI', sans-serif";
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#000";
+        ctx.fillText(opt.text, radius - 12, 8);
         ctx.restore();
       });
     }
@@ -141,7 +213,27 @@
 
     function spinWheel() {
       if (spinning) return;
+
+      shouldRemoveAfterSpin = document.getElementById("autoRemove").checked;
+
+      // Auto-remove previous selected option BEFORE spinning again
+      if (shouldRemoveAfterSpin && selectedOptionIndex !== null && options.length > 1) {
+        options.splice(selectedOptionIndex, 1);
+        selectedOptionIndex = null;
+        drawWheel();
+      }
+
+      // Prevent spin with 1 or fewer options
+      if (options.length <= 1) {
+        warningMessage.style.display = "block";
+        spinButton.disabled = true;
+        return;
+      }
+
       spinning = true;
+      spinButton.disabled = true;
+      warningMessage.style.display = "none";
+
       let duration = 4000;
       let start = null;
       let totalRotation = Math.random() * 360 + 360 * 5;
@@ -159,6 +251,7 @@
         } else {
           spinning = false;
           selectOption();
+          if (options.length > 1) spinButton.disabled = false;
         }
       }
 
@@ -172,19 +265,17 @@
     function selectOption() {
       const step = (2 * Math.PI) / options.length;
       const angle = (2 * Math.PI - (angleOffset % (2 * Math.PI))) % (2 * Math.PI);
-      const adjustedAngle = (angle + Math.PI * 1.5) % (2 * Math.PI); // top arrow = -90 degrees
+      const adjustedAngle = (angle + Math.PI * 1.5) % (2 * Math.PI);
       selectedOptionIndex = Math.floor(adjustedAngle / step);
       const selected = options[selectedOptionIndex];
       document.getElementById("result").textContent = `Result: ${selected.text}`;
+      resultHistory.push(selected.text);
+      updateHistory();
     }
 
-    function removeSelectedOption() {
-      if (selectedOptionIndex != null && options.length > 1) {
-        options.splice(selectedOptionIndex, 1);
-        selectedOptionIndex = null;
-        document.getElementById("result").textContent = "Result: ";
-        drawWheel();
-      }
+    function updateHistory() {
+      const historyDiv = document.getElementById("history");
+      historyDiv.innerHTML = `<strong>History:</strong> ` + resultHistory.map((r, i) => `<span>${i + 1}. ${r}</span>`).join(" | ");
     }
 
     function resetWheel() {
@@ -192,8 +283,13 @@
       angleOffset = 0;
       selectedOptionIndex = null;
       spinning = false;
+      resultHistory = [];
       document.getElementById("controls").style.display = "flex";
       document.getElementById("finishedControls").style.display = "none";
+      document.getElementById("result").textContent = "Result: ";
+      document.getElementById("history").textContent = "";
+      spinButton.disabled = false;
+      warningMessage.style.display = "none";
       drawWheel();
     }
 

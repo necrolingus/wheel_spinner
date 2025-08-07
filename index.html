@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" translate="no">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -122,7 +122,7 @@
 </head>
 <body>
   <div class="arrow"></div>
-  <canvas id="wheel" width="400" height="400"></canvas>
+  <canvas id="wheel" width="400" height="400" style="width: 100%; max-width: 400px;"></canvas>
 
   <div class="controls" id="controls">
     <div class="input-section">
@@ -166,7 +166,12 @@
     }
 
     function drawWheel() {
-      const radius = canvas.width / 2;
+      const renderedWidth = canvas.getBoundingClientRect().width;
+	  const scale = renderedWidth / canvas.width;
+	  ctx.save();
+	  ctx.scale(scale, scale); // apply scale
+	  const radius = canvas.width / 2;
+
       const step = (2 * Math.PI) / options.length;
 
       ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -192,6 +197,7 @@
         ctx.fillText(opt.text, radius - 12, 8);
         ctx.restore();
       });
+	  ctx.restore();
     }
 
     function addOption() {

@@ -36,19 +36,9 @@
       align-items: center;
     }
 
-    .input-section {
-      margin: 10px;
-    }
-
-    .input-section input {
-      padding: 5px;
-    }
-
-    .input-section button, .finished-controls button {
-      padding: 6px 12px;
-      margin: 5px;
-      cursor: pointer;
-    }
+    .input-section { margin: 10px; }
+    .input-section input { padding: 5px; }
+    .input-section button, .finished-controls button { padding: 6px 12px; margin: 5px; cursor: pointer; }
 
     #spinButton {
       padding: 20px 40px;
@@ -63,17 +53,10 @@
       transition: all 0.3s ease;
       margin-bottom: 20px;
     }
+    #spinButton:hover:not(:disabled){ transform: scale(1.05); box-shadow: 0 0 20px #ff4b2b; }
+    #spinButton:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; transform: none; }
 
-    #spinButton:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 20px #ff4b2b; }
-    #spinButton:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
-
-    .result-display {
-      font-weight: bold;
-      margin: 10px;
-      font-size: 20px;
-      color: #ff0;
-      text-shadow: 0 0 10px #ff0;
-    }
+    .result-display { font-weight: bold; margin: 10px; font-size: 20px; color: #ff0; text-shadow: 0 0 10px #ff0; }
 
     .bottom-options {
       margin-top: 10px;
@@ -84,23 +67,17 @@
       justify-content: center;
     }
 
-    .clear-link {
-      color: #0ff;
-      text-decoration: underline;
-      cursor: pointer;
-    }
+    .clear-link { color: #0ff; text-decoration: underline; cursor: pointer; }
 
     .arrow {
       width: 0; height: 0;
       border-left: 10px solid transparent;
       border-right: 10px solid transparent;
       border-top: 20px solid red;
-      position: absolute;
-      top: 0; left: 50%;
-      transform: translateX(-50%);
+      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
     }
 
-    /* --- NEW: History panel styles --- */
+    /* History panel */
     .history-panel {
       width: 100%;
       max-width: 540px;
@@ -110,18 +87,6 @@
       border-radius: 12px;
       box-shadow: 0 0 20px #0ff3;
       overflow: hidden;
-    }
-    .history-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 10px 12px;
-      background: #001b1b;
-      border-bottom: 1px solid #0ff3;
-    }
-    .history-title {
-      font-weight: 600;
-      color: #0ff;
     }
     .toggle-btn {
       background: transparent;
@@ -134,11 +99,7 @@
     }
     .toggle-btn:hover { box-shadow: 0 0 12px #0ff6; }
 
-    .history-body {
-      max-height: 240px;
-      overflow: auto;
-      background:#050505;
-    }
+    .history-body { max-height: 240px; overflow: auto; background:#050505; }
 
     table.history-table {
       width: 100%;
@@ -154,22 +115,11 @@
       padding: 8px 10px;
       border-bottom: 1px solid #0ff3;
     }
-    .history-table tbody td {
-      padding: 8px 10px;
-      border-bottom: 1px dashed #0ff2;
-    }
-    .history-empty {
-      padding: 12px;
-      color: #888;
-      text-align: center;
-    }
-    .hidden { display: none; }
+    .history-table tbody td { padding: 8px 10px; border-bottom: 1px dashed #0ff2; }
+    .history-empty { padding: 12px; color: #888; text-align: center; }
 
-    .warning {
-      color: #ff7070;
-      margin-top: 10px;
-      display: none;
-    }
+    .hidden { display: none; }
+    .warning { color: #ff7070; margin-top: 10px; display: none; }
   </style>
 </head>
 <body>
@@ -191,20 +141,15 @@
     <div class="bottom-options">
       <label><input type="checkbox" id="autoRemove" /> Remove selected option after spin</label>
       <div class="clear-link" onclick="resetWheel()">Clear and Start Over</div>
-      <!-- NEW: toggle button lives here too for convenience -->
       <button id="historyToggle" class="toggle-btn" onclick="toggleHistory()" aria-expanded="false">Show History</button>
     </div>
 
     <div class="warning" id="warningMessage">Only one option left. Please clear the wheel and start over.</div>
   </div>
 
-  <!-- NEW: History panel -->
+  <!-- History panel (no header/button inside) -->
   <div class="history-panel hidden" id="historyPanel">
-    <div class="history-header">
-      <div class="history-title">Spin History</div>
-      <!-- <button id="historyToggleTop" class="toggle-btn" onclick="toggleHistory()" aria-expanded="false">Hide</button> -->
-    </div>
-    <div class="history-body" id="historyBodyWrapper">
+    <div class="history-body">
       <table class="history-table">
         <thead>
           <tr>
@@ -225,10 +170,9 @@
     const spinButton = document.getElementById("spinButton");
     const warningMessage = document.getElementById("warningMessage");
 
-    // NEW: history panel refs
     const historyPanel = document.getElementById("historyPanel");
     const historyBody = document.getElementById("historyBody");
-    const historyToggleBtns = [document.getElementById("historyToggle"), document.getElementById("historyToggleTop")];
+    const historyToggleBtn = document.getElementById("historyToggle");
 
     const maxOptions = 20;
     let options = [];
@@ -246,7 +190,6 @@
     }
 
     function drawWheel() {
-      // Resize canvas to match its display size
       const rect = canvas.getBoundingClientRect();
       canvas.width = rect.width;
       canvas.height = rect.height;
@@ -272,7 +215,6 @@
         ctx.rotate(startAngle + step / 2);
         ctx.textAlign = "right";
         ctx.font = `${Math.floor(radius / 10)}px 'Segoe UI', sans-serif`;
-        ctx.shadowBlur = 0;
         ctx.fillStyle = "#000";
         ctx.fillText(opt.text, radius - 12, 8);
         ctx.restore();
@@ -301,14 +243,13 @@
 
       shouldRemoveAfterSpin = document.getElementById("autoRemove").checked;
 
-      // Auto-remove previous selected option BEFORE spinning again
+      // Remove previously selected option before next spin if requested
       if (shouldRemoveAfterSpin && selectedOptionIndex !== null && options.length > 1) {
         options.splice(selectedOptionIndex, 1);
         selectedOptionIndex = null;
         drawWheel();
       }
 
-      // Prevent spin with 1 or fewer options
       if (options.length <= 1) {
         warningMessage.style.display = "block";
         if (spinButton) spinButton.disabled = true;
@@ -339,11 +280,10 @@
           if (options.length > 1 && spinButton) spinButton.disabled = false;
         }
       }
-
       requestAnimationFrame(animate);
     }
 
-    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
+    function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
 
     function selectOption() {
       const step = (2 * Math.PI) / options.length;
@@ -356,36 +296,21 @@
       renderHistoryTable();
     }
 
-    // NEW: toggle show/hide of history panel
     function toggleHistory() {
       const isHidden = historyPanel.classList.toggle('hidden');
-      historyToggleBtns.forEach(btn => {
-        if (!btn) return;
-        btn.textContent = isHidden ? 'Show History' : 'Hide';
-        btn.setAttribute('aria-expanded', String(!isHidden));
-      });
+      historyToggleBtn.textContent = isHidden ? 'Show History' : 'Hide History';
+      historyToggleBtn.setAttribute('aria-expanded', String(!isHidden));
     }
 
-    // NEW: render the history into a table
     function renderHistoryTable() {
-      // If empty
       if (resultHistory.length === 0) {
         historyBody.innerHTML = `<tr class="history-empty-row"><td colspan="2" class="history-empty">No spins yet.</td></tr>`;
         return;
       }
-
-      const rows = resultHistory.map((r, i) => {
-        return `<tr>
-                  <td>${i + 1}</td>
-                  <td>${escapeHtml(r)}</td>
-                </tr>`;
-      }).join("");
-
-      historyBody.innerHTML = rows;
+      historyBody.innerHTML = resultHistory.map((r, i) =>
+        `<tr><td>${i + 1}</td><td>${escapeHtml(r)}</td></tr>`
+      ).join("");
     }
-
-    // Keep for compatibility if you referenced updateHistory elsewhere
-    function updateHistory() { renderHistoryTable(); }
 
     function resetWheel() {
       options = [];
@@ -399,22 +324,17 @@
       renderHistoryTable();
       if (spinButton) spinButton.disabled = false;
       warningMessage.style.display = "none";
-      if (!historyPanel.classList.contains('hidden')) toggleHistory(); // hide on reset
+      if (!historyPanel.classList.contains('hidden')) toggleHistory();
       drawWheel();
     }
 
-    // Basic HTML escaping for safety
-    function escapeHtml(str) {
-      return str.replace(/[&<>"']/g, (m) => ({
-        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
-      }[m]));
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
     }
 
-    // Initial draw & history state
     drawWheel();
     renderHistoryTable();
 
-    // Optional: redraw on resize to keep canvas crisp
     window.addEventListener('resize', () => {
       if (document.getElementById("finishedControls").style.display !== "none" || options.length) {
         drawWheel();

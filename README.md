@@ -1,15 +1,15 @@
 ## 🎯 Wheel Spin — Pure JavaScript Edition ##
-A simple, client-side only spinning wheel app — no backend, no frameworks, just HTML, CSS, and JavaScript.
+A simple, client-side only spinning wheel app, so no backend, no frameworks, just HTML, CSS, and JavaScript.
 Perfect for raffles, games, random pickers, or settling the eternal “what’s for dinner?” debate.
 
 
 ### ✨ Features ### 
-- **Add Your Own Options** — up to 20 slices on the wheel.
-- **Random Color Slices** — each option gets its own vibrant color.
-- **Auto Remove Option** — optionally remove the winning option after each spin.
-- **Spin History Table** — toggle it on/off to see past results.
-- **Pure Client-Side** — works entirely in the browser, no server required.
-- **Responsive Canvas** — looks great on desktop or mobile.
+- **Add Your Own Options:** Up to 20 slices on the wheel.
+- **Random Color Slices:** Each option gets its own vibrant color.
+- **Auto Remove Option:** Optionally remove the winning option after each spin.
+- **Spin History Table:** Toggle it on/off to see past results.
+- **Pure Client-Side:** Works entirely in the browser, no server required.
+- **Responsive Canvas:** Looks great on desktop or mobile.
 
 
 ### 🚀 How to Use ### 

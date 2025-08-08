@@ -19,17 +19,16 @@
     }
 
     canvas {
-	  width: 100%;
-	  max-width: 400px;
-	  aspect-ratio: 1 / 1;
-	  display: block;
-	  background-color: #111;
-	  border: 3px solid #0ff;
-	  border-radius: 50%;
-	  box-shadow: 0 0 30px #0ff;
-	  margin-bottom: 10px;
-	}
-
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 1 / 1;
+      display: block;
+      background-color: #111;
+      border: 3px solid #0ff;
+      border-radius: 50%;
+      box-shadow: 0 0 30px #0ff;
+      margin-bottom: 10px;
+    }
 
     .controls, .finished-controls {
       display: flex;
@@ -52,31 +51,21 @@
     }
 
     #spinButton {
-	  padding: 20px 40px; /* Bigger tap area */
-	  background: linear-gradient(45deg, #ff416c, #ff4b2b);
-	  color: white;
-	  font-size: 28px; /* Larger text */
-	  font-weight: bold;
-	  border: none;
-	  border-radius: 30px;
-	  box-shadow: 0 0 10px #ff4b2b;
-	  cursor: pointer;
-	  transition: all 0.3s ease;
-	  margin-bottom: 20px; /* Spacing below button */
-	}
-
-
-    #spinButton:hover:not(:disabled) {
-      transform: scale(1.05);
-      box-shadow: 0 0 20px #ff4b2b;
+      padding: 20px 40px;
+      background: linear-gradient(45deg, #ff416c, #ff4b2b);
+      color: white;
+      font-size: 28px;
+      font-weight: bold;
+      border: none;
+      border-radius: 30px;
+      box-shadow: 0 0 10px #ff4b2b;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      margin-bottom: 20px;
     }
 
-    #spinButton:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      box-shadow: none;
-      transform: none;
-    }
+    #spinButton:hover:not(:disabled) { transform: scale(1.05); box-shadow: 0 0 20px #ff4b2b; }
+    #spinButton:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; transform: none; }
 
     .result-display {
       font-weight: bold;
@@ -91,6 +80,8 @@
       display: flex;
       align-items: center;
       gap: 15px;
+      flex-wrap: wrap;
+      justify-content: center;
     }
 
     .clear-link {
@@ -100,24 +91,79 @@
     }
 
     .arrow {
-      width: 0;
-      height: 0;
+      width: 0; height: 0;
       border-left: 10px solid transparent;
       border-right: 10px solid transparent;
       border-top: 20px solid red;
       position: absolute;
-      top: 0;
-      left: 50%;
+      top: 0; left: 50%;
       transform: translateX(-50%);
     }
 
-    .history {
-      margin-top: 20px;
-      color: #ccc;
+    /* --- NEW: History panel styles --- */
+    .history-panel {
+      width: 100%;
+      max-width: 540px;
+      margin-top: 16px;
+      background: #0a0a0a;
+      border: 1px solid #0ff5;
+      border-radius: 12px;
+      box-shadow: 0 0 20px #0ff3;
+      overflow: hidden;
+    }
+    .history-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 12px;
+      background: #001b1b;
+      border-bottom: 1px solid #0ff3;
+    }
+    .history-title {
+      font-weight: 600;
+      color: #0ff;
+    }
+    .toggle-btn {
+      background: transparent;
+      border: 1px solid #0ff9;
+      color: #0ff;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+    }
+    .toggle-btn:hover { box-shadow: 0 0 12px #0ff6; }
+
+    .history-body {
+      max-height: 240px;
+      overflow: auto;
+      background:#050505;
+    }
+
+    table.history-table {
+      width: 100%;
+      border-collapse: collapse;
+      color: #cce;
       font-size: 14px;
-      max-width: 400px;
+    }
+    .history-table thead th {
+      position: sticky; top: 0;
+      background: #021f1f;
+      color:#9ff;
+      text-align: left;
+      padding: 8px 10px;
+      border-bottom: 1px solid #0ff3;
+    }
+    .history-table tbody td {
+      padding: 8px 10px;
+      border-bottom: 1px dashed #0ff2;
+    }
+    .history-empty {
+      padding: 12px;
+      color: #888;
       text-align: center;
     }
+    .hidden { display: none; }
 
     .warning {
       color: #ff7070;
@@ -128,8 +174,8 @@
 </head>
 <body>
   <div class="arrow"></div>
-  <!-- <canvas id="wheel" width="400" height="400" style="width: 100%; max-width: 400px;"></canvas> -->
   <canvas id="wheel"></canvas>
+
   <div class="controls" id="controls">
     <div class="input-section">
       <input type="text" id="optionInput" placeholder="Enter option here" />
@@ -141,20 +187,48 @@
   <div class="finished-controls" id="finishedControls" style="display:none">
     <div class="result-display" id="result">Result: </div>
     <button id="spinButton" onclick="spinWheel()">Spin the Wheel</button>
+
     <div class="bottom-options">
       <label><input type="checkbox" id="autoRemove" /> Remove selected option after spin</label>
       <div class="clear-link" onclick="resetWheel()">Clear and Start Over</div>
+      <!-- NEW: toggle button lives here too for convenience -->
+      <button id="historyToggle" class="toggle-btn" onclick="toggleHistory()" aria-expanded="false">Show History</button>
     </div>
+
     <div class="warning" id="warningMessage">Only one option left. Please clear the wheel and start over.</div>
   </div>
 
-  <div class="history" id="history"></div>
+  <!-- NEW: History panel -->
+  <div class="history-panel hidden" id="historyPanel">
+    <div class="history-header">
+      <div class="history-title">Spin History</div>
+      <!-- <button id="historyToggleTop" class="toggle-btn" onclick="toggleHistory()" aria-expanded="false">Hide</button> -->
+    </div>
+    <div class="history-body" id="historyBodyWrapper">
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th style="width:70px;">#</th>
+            <th>Result</th>
+          </tr>
+        </thead>
+        <tbody id="historyBody">
+          <tr class="history-empty-row"><td colspan="2" class="history-empty">No spins yet.</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
 
   <script>
     const canvas = document.getElementById("wheel");
     const ctx = canvas.getContext("2d");
     const spinButton = document.getElementById("spinButton");
     const warningMessage = document.getElementById("warningMessage");
+
+    // NEW: history panel refs
+    const historyPanel = document.getElementById("historyPanel");
+    const historyBody = document.getElementById("historyBody");
+    const historyToggleBtns = [document.getElementById("historyToggle"), document.getElementById("historyToggleTop")];
 
     const maxOptions = 20;
     let options = [];
@@ -172,39 +246,38 @@
     }
 
     function drawWheel() {
-	  // Resize canvas to match its display size
-	  const rect = canvas.getBoundingClientRect();
-	  canvas.width = rect.width;
-	  canvas.height = rect.height;
+      // Resize canvas to match its display size
+      const rect = canvas.getBoundingClientRect();
+      canvas.width = rect.width;
+      canvas.height = rect.height;
 
-	  const radius = canvas.width / 2;
-	  const step = (2 * Math.PI) / options.length;
+      const radius = canvas.width / 2;
+      const step = (2 * Math.PI) / Math.max(options.length, 1);
 
-	  ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-	  options.forEach((opt, i) => {
-		const startAngle = angleOffset + i * step;
-		const endAngle = startAngle + step;
+      options.forEach((opt, i) => {
+        const startAngle = angleOffset + i * step;
+        const endAngle = startAngle + step;
 
-		ctx.beginPath();
-		ctx.moveTo(radius, radius);
-		ctx.arc(radius, radius, radius, startAngle, endAngle);
-		ctx.fillStyle = opt.color;
-		ctx.fill();
-		ctx.stroke();
+        ctx.beginPath();
+        ctx.moveTo(radius, radius);
+        ctx.arc(radius, radius, radius, startAngle, endAngle);
+        ctx.fillStyle = opt.color;
+        ctx.fill();
+        ctx.stroke();
 
-		ctx.save();
-		ctx.translate(radius, radius);
-		ctx.rotate(startAngle + step / 2);
-		ctx.textAlign = "right";
-		ctx.font = `${Math.floor(radius / 10)}px 'Segoe UI', sans-serif`;
-		ctx.shadowBlur = 0;
-		ctx.fillStyle = "#000";
-		ctx.fillText(opt.text, radius - 12, 8);
-		ctx.restore();
-	  });
-	}
-
+        ctx.save();
+        ctx.translate(radius, radius);
+        ctx.rotate(startAngle + step / 2);
+        ctx.textAlign = "right";
+        ctx.font = `${Math.floor(radius / 10)}px 'Segoe UI', sans-serif`;
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "#000";
+        ctx.fillText(opt.text, radius - 12, 8);
+        ctx.restore();
+      });
+    }
 
     function addOption() {
       const input = document.getElementById("optionInput");
@@ -238,12 +311,12 @@
       // Prevent spin with 1 or fewer options
       if (options.length <= 1) {
         warningMessage.style.display = "block";
-        spinButton.disabled = true;
+        if (spinButton) spinButton.disabled = true;
         return;
       }
 
       spinning = true;
-      spinButton.disabled = true;
+      if (spinButton) spinButton.disabled = true;
       warningMessage.style.display = "none";
 
       let duration = 4000;
@@ -263,16 +336,14 @@
         } else {
           spinning = false;
           selectOption();
-          if (options.length > 1) spinButton.disabled = false;
+          if (options.length > 1 && spinButton) spinButton.disabled = false;
         }
       }
 
       requestAnimationFrame(animate);
     }
 
-    function easeOutCubic(t) {
-      return 1 - Math.pow(1 - t, 3);
-    }
+    function easeOutCubic(t) { return 1 - Math.pow(1 - t, 3); }
 
     function selectOption() {
       const step = (2 * Math.PI) / options.length;
@@ -282,13 +353,39 @@
       const selected = options[selectedOptionIndex];
       document.getElementById("result").textContent = `Result: ${selected.text}`;
       resultHistory.push(selected.text);
-      updateHistory();
+      renderHistoryTable();
     }
 
-    function updateHistory() {
-      const historyDiv = document.getElementById("history");
-      historyDiv.innerHTML = `<strong>History:</strong> ` + resultHistory.map((r, i) => `<span>${i + 1}. ${r}</span>`).join(" | ");
+    // NEW: toggle show/hide of history panel
+    function toggleHistory() {
+      const isHidden = historyPanel.classList.toggle('hidden');
+      historyToggleBtns.forEach(btn => {
+        if (!btn) return;
+        btn.textContent = isHidden ? 'Show History' : 'Hide';
+        btn.setAttribute('aria-expanded', String(!isHidden));
+      });
     }
+
+    // NEW: render the history into a table
+    function renderHistoryTable() {
+      // If empty
+      if (resultHistory.length === 0) {
+        historyBody.innerHTML = `<tr class="history-empty-row"><td colspan="2" class="history-empty">No spins yet.</td></tr>`;
+        return;
+      }
+
+      const rows = resultHistory.map((r, i) => {
+        return `<tr>
+                  <td>${i + 1}</td>
+                  <td>${escapeHtml(r)}</td>
+                </tr>`;
+      }).join("");
+
+      historyBody.innerHTML = rows;
+    }
+
+    // Keep for compatibility if you referenced updateHistory elsewhere
+    function updateHistory() { renderHistoryTable(); }
 
     function resetWheel() {
       options = [];
@@ -299,13 +396,30 @@
       document.getElementById("controls").style.display = "flex";
       document.getElementById("finishedControls").style.display = "none";
       document.getElementById("result").textContent = "Result: ";
-      document.getElementById("history").textContent = "";
-      spinButton.disabled = false;
+      renderHistoryTable();
+      if (spinButton) spinButton.disabled = false;
       warningMessage.style.display = "none";
+      if (!historyPanel.classList.contains('hidden')) toggleHistory(); // hide on reset
       drawWheel();
     }
 
+    // Basic HTML escaping for safety
+    function escapeHtml(str) {
+      return str.replace(/[&<>"']/g, (m) => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+      }[m]));
+    }
+
+    // Initial draw & history state
     drawWheel();
+    renderHistoryTable();
+
+    // Optional: redraw on resize to keep canvas crisp
+    window.addEventListener('resize', () => {
+      if (document.getElementById("finishedControls").style.display !== "none" || options.length) {
+        drawWheel();
+      }
+    });
   </script>
 </body>
 </html>

@@ -25,7 +25,6 @@ Perfect for raffles, games, random pickers, or settling the eternal “what’s 
 This project is static HTML/CSS/JS, so you can host it anywhere:
 - Cloudflare Pages (like this demo)
 - GitHub Pages
-- Netlify
 - Your own web server
 
 
@@ -36,4 +35,4 @@ This project is static HTML/CSS/JS, so you can host it anywhere:
 
 
 ### 📜 License ### 
-- MIT — feel free to use, share, remix, and spin responsibly.
+MIT — feel free to use, share, remix, and spin responsibly.

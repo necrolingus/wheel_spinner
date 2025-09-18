@@ -129,7 +129,7 @@
   <div class="controls" id="controls">
     <div class="input-section">
       <input type="text" id="optionInput" placeholder="Enter option here" />
-      <button onclick="addOption()">Add</button>
+      <button type="button" onclick="addOption()">Add</button>
     </div>
     <button onclick="finishAdding()">Finish</button>
   </div>
@@ -181,6 +181,16 @@
     let selectedOptionIndex = null;
     let shouldRemoveAfterSpin = false;
     let resultHistory = [];
+	
+	
+	// Pressing Enter in the input acts like clicking "Add"
+	const optionInput = document.getElementById("optionInput");
+	  optionInput.addEventListener("keydown", (e) => {
+		if (e.key === "Enter") {
+		  e.preventDefault();       // don’t submit or beep
+		  addOption();              // do exactly what the button does
+		}
+	  });
 
     function getRandomLightColor() {
       const h = Math.floor(Math.random() * 360);
@@ -260,7 +270,7 @@
       if (spinButton) spinButton.disabled = true;
       warningMessage.style.display = "none";
 
-      let duration = 4000;
+      let duration = 3000;
       let start = null;
       let totalRotation = Math.random() * 360 + 360 * 5;
 
